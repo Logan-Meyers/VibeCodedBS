@@ -1,6 +1,7 @@
 import csv
 import os
 import sys
+import textwrap
 
 # ── Config ─────────────────────────────────────────────────────────────────────
 PA_NUMBER   = 4
@@ -29,7 +30,7 @@ def compute_widths(sections):
     global W_DESC, W_NOTES, INNER_TOTAL
 
     for sec in sections:
-        for _, _, desc, notes in [sec["main"]] + sec["subs"]:
+        for _, _, desc, notes, _ in [sec["main"]] + sec["subs"]:
             W_DESC  = max(W_DESC,  len(desc))
             W_NOTES = max(W_NOTES, len(notes))
 
@@ -69,6 +70,11 @@ def full_row(text):
     """Render a row spanning all columns."""
     return f"| {text:<{INNER_TOTAL}} |"
 
+def full_rows_wrapped(text):
+    """Render a full-width row, wrapping text across multiple lines if needed."""
+    chunks = textwrap.wrap(text, width=INNER_TOTAL) if text else [""]
+    return "\n".join(f"| {chunk:<{INNER_TOTAL}} |" for chunk in chunks)
+
 
 # ── Score field formatters ──────────────────────────────────────────────────────
 def _place(field_width, s, end_idx=None, start_idx=None):
@@ -100,18 +106,24 @@ def fmt_posbl_sub(pts):
 
 # ── CSV parsing ─────────────────────────────────────────────────────────────────
 def parse_csv(path):
-    """Returns a list of section dicts: {main: (pts, posbl, desc, notes), subs: [...]}"""
+    """Returns a list of section dicts:
+        {main: (pts, posbl, desc, notes, is_bonus), subs: [...]}
+    is_bonus: pts possible excluded from total, but pts still counted.
+    """
     sections = []
     current  = None
 
     with open(path, newline="", encoding="utf-8") as f:
         for entry in csv.DictReader(f):
-            is_sub = entry["subsection"].strip() == "1"
-            rec    = (
+            is_sub   = entry["subsection"].strip() == "1"
+            desc     = entry["description"].strip()
+            is_bonus = "BONUS" in desc.upper()
+            rec      = (
                 int(entry["points"].strip()),
                 int(entry["points possible"].strip()),
-                entry["description"].strip(),
+                desc,
                 entry["notes"].strip(),
+                is_bonus,
             )
             if not is_sub:
                 current = {"main": rec, "subs": []}
@@ -136,23 +148,25 @@ def render(sections, closing_note):
     ]))
 
     for i, sec in enumerate(sections):
-        mpts, mposbl, mdesc, mnotes = sec["main"]
+        mpts, mposbl, mdesc, mnotes, _ = sec["main"]
 
         if i > 0:
             lines.append(hline())
 
         lines.append(row(fmt_pts_main(mpts), fmt_posbl_main(mposbl), mdesc, mnotes))
 
-        for spts, sposbl, sdesc, snotes in sec["subs"]:
+        for spts, sposbl, sdesc, snotes, _ in sec["subs"]:
             lines.append(row(fmt_pts_sub(spts), fmt_posbl_sub(sposbl), sdesc, snotes))
 
+    # Totals: sum pts always; sum pts possible only for non-bonus sections
     total_pts   = sum(s["main"][0] for s in sections)
-    total_posbl = sum(s["main"][1] for s in sections)
+    total_posbl = sum(s["main"][1] for s in sections if not s["main"][4])
     lines.append(hline())
     lines.append(full_row(f"Total: {total_pts}/{total_posbl}"))
 
+    # Closing note, wrapped if necessary
     lines.append(full_hline())
-    lines.append(full_row(closing_note))
+    lines.append(full_rows_wrapped(closing_note))
     lines.append(full_hline())
 
     return "\n".join(lines)
