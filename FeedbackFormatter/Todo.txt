@@ -2,3 +2,5 @@ Todo:
 1. Error handling:
   - No points given somewhere, error: "ValueError: invalid literal for int() with base 10: ''"
   - Missing notes comma at end of a line, error: "AttributeError: 'NoneType' object has no attribute 'strip'"
+2. Decimals
+  - would be nice to be able to put in decimals in points values
