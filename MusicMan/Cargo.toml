@@ -1,0 +1,55 @@
+[package]
+name = "musicman"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "musicman"
+path = "src/main.rs"
+
+[dependencies]
+# TUI
+ratatui = "0.25"
+crossterm = "0.27"
+
+# Async runtime
+tokio = { version = "1", features = ["full"] }
+
+# HTTP client
+reqwest = { version = "0.11", features = ["json", "rustls-tls"], default-features = false }
+
+# Serialization
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+toml = "0.7"
+
+# Audio tagging
+id3 = "1"
+audiotags = "0.4"
+
+# File system
+walkdir = "2"
+fs_extra = "1"
+
+# Error handling
+anyhow = "1"
+thiserror = "1"
+
+# Async trait support
+async-trait = "0.1"
+
+# Image handling (album art - BMP conversion for Rockbox)
+bmp = "0.5"
+
+# Logging
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+# Config file location
+dirs = "5"
+
+# URL encoding for API queries
+urlencoding = "2"
+
+# Pin to avoid icu chain requiring rustc >= 1.83
+url = "=2.4.1"
