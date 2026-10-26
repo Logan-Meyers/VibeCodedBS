@@ -1,0 +1,29 @@
+[package]
+name = "bfsim"
+version = "0.1.0"
+edition = "2024"
+description = "A Brainfuck interpreter, debugger and simulator with a CLI and a VS Code-flavoured GUI"
+license = "MIT"
+default-run = "bfsim"
+
+[features]
+default = ["gui"]
+gui = ["dep:eframe", "dep:rfd"]
+
+[dependencies]
+clap = { version = "4.6", features = ["derive"] }
+eframe = { version = "0.36", optional = true }
+rfd = { version = "0.17", optional = true }
+
+[[bin]]
+name = "bfsim"
+path = "src/bin/bfsim.rs"
+
+[[bin]]
+name = "bfsim-gui"
+path = "src/bin/bfsim-gui.rs"
+required-features = ["gui"]
+
+[profile.release]
+lto = "thin"
+codegen-units = 1
