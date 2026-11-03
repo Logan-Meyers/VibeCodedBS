@@ -1,0 +1,3 @@
+[submodule "Local-LeetCode-Wrapper"]
+	path = Local-LeetCode-Wrapper
+	url = git@github.com:Logan-Meyers/Local-LeetCode-Wrapper.git
